@@ -21,7 +21,7 @@ namespace Foundation.Commerce.Payment.Payoo
         IPurchaseOrder MakePurchaseOrder(ICart cart, IPayment payment);
     }
 
-    [ServiceConfiguration(typeof(IPayooCartService))]
+    [ServiceConfiguration(typeof(IPayooCartService), Lifecycle = ServiceInstanceScope.Transient)]
     public class PayooCartService : IPayooCartService
     {
         private readonly IOrderRepository _orderRepository;
@@ -133,7 +133,7 @@ namespace Foundation.Commerce.Payment.Payoo
         /// </summary>
         /// <param name="contact">The customer contact.</param>
         /// <param name="datetime">The order time.</param>
-        private void UpdateLastOrderTimestampOfCurrentContact(CustomerContact contact, DateTime datetime)
+        protected void UpdateLastOrderTimestampOfCurrentContact(CustomerContact contact, DateTime datetime)
         {
             if (contact != null)
             {
@@ -149,7 +149,7 @@ namespace Foundation.Commerce.Payment.Payoo
         /// <param name="detail">The note detail.</param>
         /// <param name="customerId">The customer Id.</param>
         /// <param name="purchaseOrder">The purchase order.</param>
-        private void AddNoteToPurchaseOrder(string title, string detail, Guid customerId, IPurchaseOrder purchaseOrder)
+        protected void AddNoteToPurchaseOrder(string title, string detail, Guid customerId, IPurchaseOrder purchaseOrder)
         {
             var orderNote = purchaseOrder.CreateOrderNote();
             orderNote.Type = OrderNoteTypes.System.ToString();
@@ -160,7 +160,7 @@ namespace Foundation.Commerce.Payment.Payoo
             purchaseOrder.Notes.Add(orderNote);
         }
 
-        private void AddValidationIssues(IDictionary<ILineItem, IList<ValidationIssue>> issues, ILineItem lineItem, ValidationIssue issue)
+        protected void AddValidationIssues(IDictionary<ILineItem, IList<ValidationIssue>> issues, ILineItem lineItem, ValidationIssue issue)
         {
             if (!issues.ContainsKey(lineItem))
             {

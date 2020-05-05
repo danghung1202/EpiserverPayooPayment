@@ -240,6 +240,7 @@
     <Compile Include="PayooPaymentGateway.cs" />
     <Compile Include="PayooPaymentMethod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\CmsPaymentPropertyService.cs" />
     <Compile Include="Services\PayooCartService.cs" />
   </ItemGroup>
   <ItemGroup>

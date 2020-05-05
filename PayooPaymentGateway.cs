@@ -22,23 +22,27 @@ namespace Foundation.Commerce.Payment.Payoo
         private readonly IOrderRepository _orderRepository;
         private readonly IOrderNumberGenerator _orderNumberGenerator;
         private readonly IPayooCartService _payooCartService;
+        private readonly ICmsPaymentPropertyService _cmsPaymentPropertyService;
         private PayooConfiguration _paymentMethodConfiguration;
 
         public PayooPaymentGateway()
             : this(
                 ServiceLocator.Current.GetInstance<IPayooCartService>(),
                 ServiceLocator.Current.GetInstance<IOrderNumberGenerator>(),
-                ServiceLocator.Current.GetInstance<IOrderRepository>())
+                ServiceLocator.Current.GetInstance<IOrderRepository>(),
+                ServiceLocator.Current.GetInstance<ICmsPaymentPropertyService>())
         { }
 
         public PayooPaymentGateway(
             IPayooCartService payooCartService,
             IOrderNumberGenerator orderNumberGenerator,
-            IOrderRepository orderRepository)
+            IOrderRepository orderRepository,
+            ICmsPaymentPropertyService cmsPaymentPropertyService)
         {
             _payooCartService = payooCartService;
             _orderNumberGenerator = orderNumberGenerator;
             _orderRepository = orderRepository;
+            _cmsPaymentPropertyService = cmsPaymentPropertyService;
             _paymentMethodConfiguration = new PayooConfiguration(Settings);
         }
 
@@ -171,7 +175,7 @@ namespace Foundation.Commerce.Payment.Payoo
             order.OrderCashAmount = (long)payment.Amount;
             order.OrderNo = orderNumberID;
             order.ShippingDays = 1;
-            order.ShopBackUrl = $"{HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Authority)}{Utilities.GetUrlFromStartPageReferenceProperty(Constant.PayooPaymentPagePropertyName)}";
+            order.ShopBackUrl = $"{HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Authority)}{_cmsPaymentPropertyService.GetPayooPaymentProcessingPage()}";
             order.ShopDomain = HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Authority);
             order.ShopID = long.Parse(_paymentMethodConfiguration.ShopID);
             order.ShopTitle = _paymentMethodConfiguration.ShopTitle;

@@ -16,13 +16,17 @@ namespace Foundation.Commerce.Payment.Payoo.Controllers
     public class PayooPaymentController : PageController<PayooPaymentPage>
     {
         private readonly IOrderRepository _orderRepository;
+        private readonly ICmsPaymentPropertyService _cmsPaymentPropertyService;
 
-        public PayooPaymentController() : this(ServiceLocator.Current.GetInstance<IOrderRepository>())
+        public PayooPaymentController() : this(
+            ServiceLocator.Current.GetInstance<IOrderRepository>(),
+            ServiceLocator.Current.GetInstance<ICmsPaymentPropertyService>())
         { }
 
-        public PayooPaymentController(IOrderRepository orderRepository)
+        public PayooPaymentController(IOrderRepository orderRepository, ICmsPaymentPropertyService cmsPaymentPropertyService)
         {
             _orderRepository = orderRepository;
+            _cmsPaymentPropertyService = cmsPaymentPropertyService;
         }
 
         public ActionResult Index()
@@ -53,7 +57,7 @@ namespace Foundation.Commerce.Payment.Payoo.Controllers
 
             // Redirect customer to receipt page
             var paymentResult = ExtractPaymentResultFromPayoo();
-            var cancelUrl = Utilities.GetUrlFromStartPageReferenceProperty(Constant.CheckoutPagePropertyName); // get link to Checkout page
+            var cancelUrl = _cmsPaymentPropertyService.GetCancelledPaymentUrl(); // get link to Checkout page
             cancelUrl = UriUtil.AddQueryString(cancelUrl, "success", "false");
             cancelUrl = UriUtil.AddQueryString(cancelUrl, "paymentmethod", "payoo");
 
@@ -63,7 +67,7 @@ namespace Foundation.Commerce.Payment.Payoo.Controllers
                 var gateway = new PayooPaymentGateway();
                 if (paymentResult.Status.Equals("1"))
                 {
-                    var acceptUrl = Utilities.GetUrlFromStartPageReferenceProperty(Constant.OrderConfirmationPagePropertyName);
+                    var acceptUrl = _cmsPaymentPropertyService.GetAcceptedPaymentUrl();
                     redirectUrl = gateway.ProcessSuccessfulTransaction(currentCart, payment, acceptUrl, cancelUrl);
                 }
                 else
