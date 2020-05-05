@@ -1,0 +1,135 @@
+﻿<MetaDataPlusBackup version="1.0">
+  <MetaClass>
+    <Namespace>Mediachase.Commerce.Orders.System</Namespace>
+    <Name>OrderFormPayment</Name>
+    <FriendlyName>Order Form Payment</FriendlyName>
+    <MetaClassType>System</MetaClassType>
+    <ParentClass></ParentClass>
+    <TableName>OrderFormPayment</TableName>
+    <Description>OrderFormPayment Class</Description>
+    <IsSystem>True</IsSystem>
+    <IsAbstract>False</IsAbstract>
+    <FieldListChangedSqlScript></FieldListChangedSqlScript>
+    <Tag></Tag>
+    <Attributes></Attributes>
+  </MetaClass>
+  <MetaClass>
+    <Namespace>Mediachase.Commerce.Orders.User</Namespace>
+    <Name>PayooPayment</Name>
+    <FriendlyName>Payoo payment</FriendlyName>
+    <MetaClassType>User</MetaClassType>
+    <ParentClass>OrderFormPayment</ParentClass>
+    <TableName>OrderFormPaymentEx_PayooPayment</TableName>
+    <Description>Information used by Payoo types of payment</Description>
+    <IsSystem>False</IsSystem>
+    <IsAbstract>False</IsAbstract>
+    <FieldListChangedSqlScript></FieldListChangedSqlScript>
+    <Tag></Tag>
+    <Attributes></Attributes>
+  </MetaClass>
+  <MetaField>
+    <Namespace>Mediachase.Commerce.Orders</Namespace>
+    <Name>PayooOrderId</Name>
+    <FriendlyName>Payoo OrderId</FriendlyName>
+    <Description>Payoo OrderId</Description>
+    <DataType>ShortString</DataType>
+    <Length>512</Length>
+    <AllowNulls>True</AllowNulls>
+    <SaveHistory>False</SaveHistory>
+    <AllowSearch>False</AllowSearch>
+    <MultiLanguageValue>False</MultiLanguageValue>
+    <IsSystem>False</IsSystem>
+    <Tag></Tag>
+    <Attributes>
+      <Attribute>
+        <Key>useincomparing</Key>
+        <Value>False</Value>
+      </Attribute>
+    </Attributes>
+    <OwnerMetaClass>PayooPayment</OwnerMetaClass>
+  </MetaField>
+  <MetaField>
+    <Namespace>Mediachase.Commerce.Orders</Namespace>
+    <Name>PayooOrderNumber</Name>
+    <FriendlyName>Payoo order number</FriendlyName>
+    <Description>Payoo order number</Description>
+    <DataType>ShortString</DataType>
+    <Length>512</Length>
+    <AllowNulls>True</AllowNulls>
+    <SaveHistory>False</SaveHistory>
+    <AllowSearch>False</AllowSearch>
+    <MultiLanguageValue>False</MultiLanguageValue>
+    <IsSystem>False</IsSystem>
+    <Tag></Tag>
+    <Attributes>
+      <Attribute>
+        <Key>useincomparing</Key>
+        <Value>False</Value>
+      </Attribute>
+    </Attributes>
+    <OwnerMetaClass>PayooPayment</OwnerMetaClass>
+  </MetaField>
+  <MetaField>
+    <Namespace>Mediachase.Commerce.Orders</Namespace>
+    <Name>PayooAmount</Name>
+    <FriendlyName>Payoo Amount</FriendlyName>
+    <Description>Payoo Amount</Description>
+    <DataType>ShortString</DataType>
+    <Length>512</Length>
+    <AllowNulls>True</AllowNulls>
+    <SaveHistory>False</SaveHistory>
+    <AllowSearch>False</AllowSearch>
+    <MultiLanguageValue>False</MultiLanguageValue>
+    <IsSystem>False</IsSystem>
+    <Tag></Tag>
+    <Attributes>
+      <Attribute>
+        <Key>useincomparing</Key>
+        <Value>False</Value>
+      </Attribute>
+    </Attributes>
+    <OwnerMetaClass>PayooPayment</OwnerMetaClass>
+  </MetaField>
+  <MetaField>
+    <Namespace>Mediachase.Commerce.Orders</Namespace>
+    <Name>PayooPaymentCode</Name>
+    <FriendlyName>Payoo Payment Code</FriendlyName>
+    <Description>Payoo Payment Code</Description>
+    <DataType>ShortString</DataType>
+    <Length>512</Length>
+    <AllowNulls>True</AllowNulls>
+    <SaveHistory>False</SaveHistory>
+    <AllowSearch>False</AllowSearch>
+    <MultiLanguageValue>False</MultiLanguageValue>
+    <IsSystem>False</IsSystem>
+    <Tag></Tag>
+    <Attributes>
+      <Attribute>
+        <Key>useincomparing</Key>
+        <Value>False</Value>
+      </Attribute>
+    </Attributes>
+    <OwnerMetaClass>PayooPayment</OwnerMetaClass>
+  </MetaField>
+  <MetaField>
+    <Namespace>Mediachase.Commerce.Orders</Namespace>
+    <Name>PayooExpiryDate</Name>
+    <FriendlyName>Payoo Expiry Date</FriendlyName>
+    <Description>Payoo Expiry Date</Description>
+    <DataType>ShortString</DataType>
+    <Length>512</Length>
+    <AllowNulls>True</AllowNulls>
+    <SaveHistory>False</SaveHistory>
+    <AllowSearch>False</AllowSearch>
+    <MultiLanguageValue>False</MultiLanguageValue>
+    <IsSystem>False</IsSystem>
+    <Tag></Tag>
+    <Attributes>
+      <Attribute>
+        <Key>useincomparing</Key>
+        <Value>False</Value>
+      </Attribute>
+    </Attributes>
+    <OwnerMetaClass>PayooPayment</OwnerMetaClass>
+  </MetaField>
+</MetaDataPlusBackup>
