@@ -52,7 +52,7 @@ namespace Foundation.Commerce.Payment.Payoo
 			                                                <td align='right'>
 				                                                <b>Khuyến mãi:</b>
 			                                                </td>
-			                                                <td align='right'>-{3}</td>
+			                                                <td align='right'>{3}</td>
 		                                                </tr>
                                                         <tr>
                                                             <td></td>
@@ -93,7 +93,7 @@ namespace Foundation.Commerce.Payment.Payoo
                 CreateOrderLines(orderGroup),
                 orderGroup.GetSubTotal(),
                 orderGroup.GetShippingSubTotal() - orderGroup.GetShippingDiscountTotal(),
-                orderGroup.GetOrderDiscountTotal(),
+                -orderGroup.GetOrderDiscountTotal(),
                 totals.TaxTotal,
                 totals.Total,
                 string.Empty);
