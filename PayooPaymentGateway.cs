@@ -190,7 +190,7 @@ namespace Foundation.Commerce.Payment.Payoo
             order.CustomerAddress = customer.PreferredShippingAddress.Line1;
             order.CustomerCity = customer.PreferredShippingAddress.City;
 
-            order.OrderDescription = HttpUtility.UrlEncode("<table width='100%' border='1' cellspacing='0'><thead><tr><td width='40%' align='center'><b>Tên hàng</b></td><td width='20%' align='center'><b>Đơn giá</b></td><td width='15%' align='center'><b>Số lượng</b></td><td width='25%' align='center'><b>Thành tiền</b></td></tr></thead><tbody><tr><td align='left'>HP Pavilion DV3-3502TX</td><td align='right'>23,000</td><td align='center'>1</td><td align='right'>23,000</td></tr><tr><td align='left'>FAN Notebook (B4)</td><td align='right'>10,000</td><td align='center'>1</td><td align='right'>10,000</td></tr><tr><td align='right' colspan='3'><b>Tổng tiền:</b></td><td align='right'>43,000</td></tr><tr><td align='left' colspan='4'>Some notes for the order</td></tr></tbody></table>");
+            order.OrderDescription = HttpUtility.UrlEncode(OrderDescriptionHTMLFactory.CreateOrderDescription(orderGroup));
             order.Xml = PaymentXMLFactory.GetPaymentXML(order);
             return order;
         }

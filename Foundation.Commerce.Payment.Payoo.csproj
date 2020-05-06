@@ -229,6 +229,7 @@
     </Compile>
     <Compile Include="Constant.cs" />
     <Compile Include="Controllers\PayooPaymentController.cs" />
+    <Compile Include="Helpers\OrderDescriptionHTMLFactory.cs" />
     <Compile Include="Helpers\PaymentXMLFactory.cs" />
     <Compile Include="Helpers\PayooConfiguration.cs" />
     <Compile Include="Helpers\Utilities.cs" />
