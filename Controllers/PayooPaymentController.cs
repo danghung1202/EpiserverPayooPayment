@@ -73,13 +73,13 @@ namespace Foundation.Commerce.Payment.Payoo.Controllers
                 else
                 {
                     var message = paymentResult.Status.Equals("0") ? "Payment failed via Payoo gateway" : "Payment cancelled via Payoo gateway";
-                    TempData["ErrorMessages"] = message;
+                    TempData[Constant.ErrorMessages] = message;
                     redirectUrl = gateway.ProcessUnsuccessfulTransaction(cancelUrl, message);
                 }
             }
             else
             {
-                TempData["ErrorMessages"] = "The Payoo checksum is invalid";
+                TempData[Constant.ErrorMessages] = "The Payoo checksum is invalid";
             }
 
             return Redirect(redirectUrl);

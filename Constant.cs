@@ -8,5 +8,7 @@
         public const string PayooAmountPropertyName = "PayooAmount";
         public const string PayooPaymentCodePropertyName = "PayooPaymentCode";
         public const string PayooExpiryDatePropertyName = "PayooExpiryDate";
+
+        public const string ErrorMessages = nameof(ErrorMessages);
     }
 }
