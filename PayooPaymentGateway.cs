@@ -187,8 +187,8 @@ namespace Foundation.Commerce.Payment.Payoo
             order.CustomerName = customer.FullName ?? $"{customer.FirstName} {customer.MiddleName} {customer.LastName}";
             order.CustomerPhone = string.Empty;
             order.CustomerEmail = customer.Email;
-            order.CustomerAddress = customer.PreferredShippingAddress.Line1;
-            order.CustomerCity = customer.PreferredShippingAddress.City;
+            order.CustomerAddress = customer.PreferredShippingAddress?.Line1;
+            order.CustomerCity = customer.PreferredShippingAddress?.City;
 
             order.OrderDescription = HttpUtility.UrlEncode(OrderDescriptionHTMLFactory.CreateOrderDescription(orderGroup));
             order.Xml = PaymentXMLFactory.GetPaymentXML(order);
