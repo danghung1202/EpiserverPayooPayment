@@ -14,6 +14,7 @@
         /// -1: Cancelled
         /// </summary>
         public string Status { get; set; }
+        public bool IsSuccess => Status == "1";
         /// <summary>
         /// Error code in case payment failure (Status = 0)
         /// </summary>
@@ -36,5 +37,7 @@
         /// Ex: SHA512(1029998308894403SS7981.ORD77823.1
         /// </summary>
         public string Checksum { get; set; }
+        public string TotalAmount { get; set; }
+        public string PaymentFree { get; set; }
     }
 }

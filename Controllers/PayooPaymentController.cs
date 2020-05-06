@@ -65,7 +65,7 @@ namespace Foundation.Commerce.Payment.Payoo.Controllers
             if (VerifyChecksumIsValid(payooConfiguration.ChecksumKey, orderNumber, paymentResult))
             {
                 var gateway = new PayooPaymentGateway();
-                if (paymentResult.Status.Equals("1"))
+                if (paymentResult.IsSuccess)
                 {
                     var acceptUrl = _cmsPaymentPropertyService.GetAcceptedPaymentUrl();
                     redirectUrl = gateway.ProcessSuccessfulTransaction(currentCart, payment, acceptUrl, cancelUrl);
@@ -76,6 +76,10 @@ namespace Foundation.Commerce.Payment.Payoo.Controllers
                     TempData["ErrorMessages"] = message;
                     redirectUrl = gateway.ProcessUnsuccessfulTransaction(cancelUrl, message);
                 }
+            }
+            else
+            {
+                TempData["ErrorMessages"] = "The Payoo checksum is invalid";
             }
 
             return Redirect(redirectUrl);
@@ -92,7 +96,9 @@ namespace Foundation.Commerce.Payment.Payoo.Controllers
                 ErrorMsg = Request.QueryString["errormsg"],
                 PaymentMethod = Request.QueryString["paymethod"],
                 Bank = Request.QueryString["bank"],
-                Checksum = Request.QueryString["checksum"]
+                Checksum = Request.QueryString["checksum"],
+                TotalAmount = Request.QueryString["totalAmount"],
+                PaymentFree = Request.QueryString["paymentFee"]
             };
         }
 
