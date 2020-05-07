@@ -72,8 +72,8 @@ namespace Foundation.Commerce.Payment.Payoo.Controllers
                 }
                 else
                 {
-                    var message = paymentResult.Status.Equals("0") ? "Payment failed via Payoo gateway" : "Payment cancelled via Payoo gateway";
-                    TempData[Constant.ErrorMessages] = message;
+                    var message = paymentResult.Status.Equals("0") ? "Payment failed" : "Payment cancelled";
+                    TempData[Constant.ErrorMessages] = $"{message}. Payoo Message: {paymentResult.ErrorCode}-{paymentResult.ErrorMsg}";
                     redirectUrl = gateway.ProcessUnsuccessfulTransaction(cancelUrl, message);
                 }
             }
@@ -102,10 +102,10 @@ namespace Foundation.Commerce.Payment.Payoo.Controllers
             };
         }
 
-        private bool VerifyChecksumIsValid(string checksumKey, string orderNumber, PayooPaymentResult payment)
+        private bool VerifyChecksumIsValid(string checksumKey, string orderNumber, PayooPaymentResult payooResult)
         {
-            var localChecksum = Utilities.EncryptSHA512($"{checksumKey}{payment.Session}.{orderNumber}.{payment.Status}");
-            return localChecksum.Equals(payment.Checksum, StringComparison.OrdinalIgnoreCase);
+            var localChecksum = Utilities.EncryptSHA512($"{checksumKey}{payooResult.Session}.{orderNumber}.{payooResult.Status}");
+            return localChecksum.Equals(payooResult.Checksum, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
