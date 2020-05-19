@@ -14,16 +14,19 @@ namespace Foundation.Commerce.Payment.Payoo
         private static string _orderDescHtml = @"<table width='100%' border='1' cellspacing='0'>
 	                                                <thead>
 		                                                <tr>
-			                                                <td width='40%' align='center'>
+			                                                <td width='35%' align='center'>
 				                                                <b>Tên hàng</b>
+			                                                </td>
+                                                            <td width='10%' align='center'>
+				                                                <b>Số lượng</b>
 			                                                </td>
 			                                                <td width='20%' align='center'>
 				                                                <b>Đơn giá</b>
 			                                                </td>
-			                                                <td width='15%' align='center'>
-				                                                <b>Số lượng</b>
+                                                            <td width='15%' align='center'>
+				                                                <b>Giảm giá</b>
 			                                                </td>
-			                                                <td width='25%' align='center'>
+			                                                <td width='20%' align='center'>
 				                                                <b>Thành tiền</b>
 			                                                </td>
 		                                                </tr>
@@ -31,6 +34,7 @@ namespace Foundation.Commerce.Payment.Payoo
 	                                                <tbody>
                                                         {0}
                                                         <tr>
+                                                            <td></td>
                                                             <td></td>
                                                             <td></td>
 			                                                <td align='right'>
@@ -41,12 +45,14 @@ namespace Foundation.Commerce.Payment.Payoo
                                                         <tr>
                                                             <td></td>
                                                             <td></td>
+                                                            <td></td>
 			                                                <td align='right'>
 				                                                <b>Phí giao hàng:</b>
 			                                                </td>
 			                                                <td align='right'>{2}</td>
                                                         </tr>
                                                         <tr>
+                                                            <td></td>
                                                             <td></td>
                                                             <td></td>
 			                                                <td align='right'>
@@ -57,6 +63,7 @@ namespace Foundation.Commerce.Payment.Payoo
                                                         <tr>
                                                             <td></td>
                                                             <td></td>
+                                                            <td></td>
 			                                                <td align='right'>
 				                                                <b>Thuế VAT:</b>
 			                                                </td>
@@ -65,13 +72,11 @@ namespace Foundation.Commerce.Payment.Payoo
                                                         <tr>
                                                             <td></td>
                                                             <td></td>
+                                                            <td></td>
 			                                                <td align='right'>
 				                                                <b>Tổng tiền:</b>
 			                                                </td>
 			                                                <td align='right'>{5}</td>
-		                                                </tr>
-		                                                <tr>
-			                                                <td align='left' colspan='4'>{6}</td>
 		                                                </tr>
 	                                                </tbody>
                                                 </table>";
@@ -82,6 +87,7 @@ namespace Foundation.Commerce.Payment.Payoo
 			                                        <td align='right'>{1}</td>
 			                                        <td align='center'>{2}</td>
 			                                        <td align='right'>{3}</td>
+                                                    <td align='right'>{4}</td>
 		                                        </tr>";
 
         public static string CreateOrderDescription(IOrderGroup orderGroup)
@@ -95,8 +101,7 @@ namespace Foundation.Commerce.Payment.Payoo
                 orderGroup.GetShippingSubTotal() - orderGroup.GetShippingDiscountTotal(),
                 -orderGroup.GetOrderDiscountTotal(),
                 totals.TaxTotal,
-                totals.Total,
-                string.Empty);
+                totals.Total);
         }
 
         private static string CreateOrderLines(IOrderGroup orderGroup)
@@ -108,12 +113,12 @@ namespace Foundation.Commerce.Payment.Payoo
             {
                 orderLinesHtml.Append(string.Format(_orderLineHtml,
                     lineItem.GetEntryContent().DisplayName,
-                    new Money(lineItem.PlacedPrice, currency),
                     lineItem.Quantity.ToString("0"),
-                    new Money(lineItem.PlacedPrice * lineItem.Quantity, currency)));
+                    new Money(lineItem.PlacedPrice, currency),
+                    new Money(lineItem.GetEntryDiscount(), currency),
+                    lineItem.GetDiscountedPrice(currency)));
             }
             return orderLinesHtml.ToString();
         }
-
     }
 }
