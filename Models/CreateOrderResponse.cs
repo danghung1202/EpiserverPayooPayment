@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Foundation.Commerce.Payment.Payoo.Models
+namespace Foundation.Commerce.Payment.Payoo
 {
     public class CreateOrderResponse
     {

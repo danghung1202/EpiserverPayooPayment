@@ -229,12 +229,15 @@
     </Compile>
     <Compile Include="Constant.cs" />
     <Compile Include="Controllers\PayooPaymentController.cs" />
+    <Compile Include="Helpers\CmsCryptography.cs" />
     <Compile Include="Helpers\OrderDescriptionHTMLFactory.cs" />
     <Compile Include="Helpers\PaymentXMLFactory.cs" />
     <Compile Include="Helpers\PayooConfiguration.cs" />
     <Compile Include="Helpers\Utilities.cs" />
     <Compile Include="Models\CreateOrderResponse.cs" />
+    <Compile Include="Models\PaymentNotification.cs" />
     <Compile Include="Models\PaymentResult.cs" />
+    <Compile Include="Models\PayooConnectionPackage.cs" />
     <Compile Include="Models\PayooOrder.cs" />
     <Compile Include="PageTypes\PayooPaymentPage.cs" />
     <Compile Include="PayooPayment.cs" />

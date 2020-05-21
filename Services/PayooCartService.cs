@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Web;
 using EPiServer.Commerce.Order;
 using EPiServer.Data;
+using EPiServer.Logging.Compatibility;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
+using EPiServer.Web;
 using Mediachase.Commerce.Core.Features;
 using Mediachase.Commerce.Customers;
 using Mediachase.Commerce.Extensions;
@@ -17,6 +20,10 @@ namespace Foundation.Commerce.Payment.Payoo
 {
     public interface IPayooCartService
     {
+        string GetDefaultCartName();
+        ICart LoadDefaultCart();
+        IPurchaseOrder ProcessSuccessfulTransaction(ICart cart, IPayment payment);
+        string ProcessUnsuccessfulTransaction(string cancelUrl, string errorMessage);
         bool DoCompletingCart(ICart cart, IList<string> errorMessages);
         IPurchaseOrder MakePurchaseOrder(ICart cart, IPayment payment);
     }
@@ -24,6 +31,8 @@ namespace Foundation.Commerce.Payment.Payoo
     [ServiceConfiguration(typeof(IPayooCartService), Lifecycle = ServiceInstanceScope.Transient)]
     public class PayooCartService : IPayooCartService
     {
+        private readonly ILog _logger = LogManager.GetLogger(typeof(PayooCartService));
+
         private readonly IOrderRepository _orderRepository;
         private readonly IFeatureSwitch _featureSwitch;
         private readonly IInventoryProcessor _inventoryProcessor;
@@ -46,6 +55,53 @@ namespace Foundation.Commerce.Payment.Payoo
             _orderRepository = orderRepository;
         }
 
+        public virtual string GetDefaultCartName() => Cart.DefaultName;
+
+        public virtual ICart LoadDefaultCart() => _orderRepository.LoadCart<ICart>(PrincipalInfo.CurrentPrincipal.GetContactId(), GetDefaultCartName());
+
+        /// <summary>
+        /// Processes the successful transaction, was called when Payoo Gateway redirect back.
+        /// </summary>
+        /// <param name="cart"></param>
+        /// <param name="payment">The order payment.</param>
+        /// <returns>The url redirection after process.</returns>
+        public virtual IPurchaseOrder ProcessSuccessfulTransaction(ICart cart, IPayment payment)
+        {
+            if (HttpContext.Current == null || cart == null)
+            {
+                return null;
+            }
+            // everything is fine
+            var errorMessages = new List<string>();
+            var cartCompleted = DoCompletingCart(cart, errorMessages);
+
+            if (!cartCompleted)
+            {
+                _logger.Error(string.Join(";", errorMessages.Distinct().ToArray()));
+                return null;
+            }
+
+            // Place order
+            return MakePurchaseOrder(cart, payment);
+        }
+
+        /// <summary>
+        /// Processes the unsuccessful transaction
+        /// </summary>
+        /// <param name="cancelUrl">The cancel url.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>The url redirection after process.</returns>
+        public virtual string ProcessUnsuccessfulTransaction(string cancelUrl, string errorMessage)
+        {
+            if (HttpContext.Current == null)
+            {
+                return cancelUrl;
+            }
+
+            _logger.Error($"Payoo transaction failed [{errorMessage}].");
+            return UriUtil.AddQueryString(cancelUrl, "message", HttpUtility.UrlEncode(errorMessage));
+        }
+
         /// <summary>
         /// Validates and completes a cart.
         /// </summary>
@@ -56,37 +112,16 @@ namespace Foundation.Commerce.Payment.Payoo
             // Change status of payments to processed. 
             // It must be done before execute workflow to ensure payments which should mark as processed.
             // To avoid get errors when executed workflow.
-            foreach (IPayment p in cart.Forms.SelectMany(f => f.Payments).Where(p => p != null))
-            {
-                PaymentStatusManager.ProcessPayment(p);
-            }
+            //process payment
+            var processed = ProcessPayment(cart);
+            if (!processed) return false;
 
             var isSuccess = true;
 
             if (_databaseMode.Value != DatabaseMode.ReadOnly)
             {
-                if (_featureSwitch.IsSerializedCartsEnabled())
-                {
-                    var validationIssues = new Dictionary<ILineItem, IList<ValidationIssue>>();
-                    cart.AdjustInventoryOrRemoveLineItems(
-                        (item, issue) => AddValidationIssues(validationIssues, item, issue), _inventoryProcessor);
-
-                    isSuccess = !validationIssues.Any();
-
-                    foreach (var issue in validationIssues.Values.SelectMany(x => x).Distinct())
-                    {
-                        if (issue == ValidationIssue.RejectedInventoryRequestDueToInsufficientQuantity)
-                        {
-                            errorMessages.Add("NotEnoughStockWarning");
-                        }
-                        else
-                        {
-                            errorMessages.Add("CartValidationWarning");
-                        }
-                    }
-
-                    return isSuccess;
-                }
+                isSuccess = UpdateInventory(cart, errorMessages);
+                if (!isSuccess) return false;
 
                 // Execute CheckOutWorkflow with parameter to ignore running process payment activity again.
                 var isIgnoreProcessPayment = new Dictionary<string, object> { { "PreventProcessPayment", true } };
@@ -126,6 +161,49 @@ namespace Foundation.Commerce.Payment.Payoo
             _orderRepository.Save(purchaseOrder);
 
             return purchaseOrder;
+        }
+
+        protected bool ProcessPayment(ICart cart)
+        {
+            try
+            {
+                foreach (IPayment p in cart.Forms.SelectMany(f => f.Payments).Where(p => p != null))
+                {
+                    PaymentStatusManager.ProcessPayment(p);
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Process Payment Failed", ex);
+                return false;
+            }
+        }
+
+        protected bool UpdateInventory(ICart cart, IList<string> errorMessages)
+        {
+            if (!_featureSwitch.IsSerializedCartsEnabled()) return true;
+
+            var isSuccess = true;
+            var validationIssues = new Dictionary<ILineItem, IList<ValidationIssue>>();
+            cart.AdjustInventoryOrRemoveLineItems(
+                (item, issue) => AddValidationIssues(validationIssues, item, issue), _inventoryProcessor);
+
+            isSuccess = !validationIssues.Any();
+
+            foreach (var issue in validationIssues.Values.SelectMany(x => x).Distinct())
+            {
+                if (issue == ValidationIssue.RejectedInventoryRequestDueToInsufficientQuantity)
+                {
+                    errorMessages.Add("NotEnoughStockWarning");
+                }
+                else
+                {
+                    errorMessages.Add("CartValidationWarning");
+                }
+            }
+
+            return isSuccess;
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
 ﻿using System;
-using Foundation.Commerce.Payment.Payoo.Models;
 
 namespace Foundation.Commerce.Payment.Payoo
 {

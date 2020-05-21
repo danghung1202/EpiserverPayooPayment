@@ -8,7 +8,6 @@ using EPiServer.Commerce.Order;
 using EPiServer.Logging.Compatibility;
 using EPiServer.ServiceLocation;
 using EPiServer.Web;
-using Foundation.Commerce.Payment.Payoo.Models;
 using Mediachase.Commerce.Customers;
 using Mediachase.Commerce.Plugins.Payment;
 using RestSharp;
@@ -21,25 +20,21 @@ namespace Foundation.Commerce.Payment.Payoo
 
         private readonly IOrderRepository _orderRepository;
         private readonly IOrderNumberGenerator _orderNumberGenerator;
-        private readonly IPayooCartService _payooCartService;
         private readonly ICmsPaymentPropertyService _cmsPaymentPropertyService;
         private PayooConfiguration _paymentMethodConfiguration;
 
         public PayooPaymentGateway()
             : this(
-                ServiceLocator.Current.GetInstance<IPayooCartService>(),
                 ServiceLocator.Current.GetInstance<IOrderNumberGenerator>(),
                 ServiceLocator.Current.GetInstance<IOrderRepository>(),
                 ServiceLocator.Current.GetInstance<ICmsPaymentPropertyService>())
         { }
 
         public PayooPaymentGateway(
-            IPayooCartService payooCartService,
             IOrderNumberGenerator orderNumberGenerator,
             IOrderRepository orderRepository,
             ICmsPaymentPropertyService cmsPaymentPropertyService)
         {
-            _payooCartService = payooCartService;
             _orderNumberGenerator = orderNumberGenerator;
             _orderRepository = orderRepository;
             _cmsPaymentPropertyService = cmsPaymentPropertyService;
@@ -109,62 +104,6 @@ namespace Foundation.Commerce.Payment.Payoo
             return PaymentProcessingResult.CreateSuccessfulResult(message, redirectUrl);
         }
 
-        /// <summary>
-        /// Processes the successful transaction, was called when Payoo Gateway redirect back.
-        /// </summary>
-        /// <param name="orderGroup">The order group that was processed.</param>
-        /// <param name="payment">The order payment.</param>
-        /// <param name="acceptUrl">The redirect url when finished.</param>
-        /// <param name="cancelUrl">The redirect url when error happens.</param>
-        /// <returns>The url redirection after process.</returns>
-        public string ProcessSuccessfulTransaction(IOrderGroup orderGroup, IPayment payment, string acceptUrl, string cancelUrl)
-        {
-            if (HttpContext.Current == null)
-            {
-                return cancelUrl;
-            }
-
-            var cart = orderGroup as ICart;
-            if (cart == null)
-            {
-                // return to the shopping cart page immediately and show error messages
-                return ProcessUnsuccessfulTransaction(cancelUrl, "Commit Tran Error Cart Null");
-            }
-
-            // everything is fine
-            var errorMessages = new List<string>();
-            var cartCompleted = _payooCartService.DoCompletingCart(cart, errorMessages);
-
-            if (!cartCompleted)
-            {
-                return UriUtil.AddQueryString(cancelUrl, "message", string.Join(";", errorMessages.Distinct().ToArray()));
-            }
-
-            // Place order
-            var purchaseOrder = _payooCartService.MakePurchaseOrder(cart, payment);
-            var redirectionUrl = CreateRedirectionUrl(purchaseOrder, acceptUrl);
-            _logger.Info($"Payoo transaction succeeds, redirect end user to {redirectionUrl}");
-
-            return redirectionUrl;
-        }
-
-        /// <summary>
-        /// Processes the unsuccessful transaction
-        /// </summary>
-        /// <param name="cancelUrl">The cancel url.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns>The url redirection after process.</returns>
-        public string ProcessUnsuccessfulTransaction(string cancelUrl, string errorMessage)
-        {
-            if (HttpContext.Current == null)
-            {
-                return cancelUrl;
-            }
-
-            _logger.Error($"Payoo transaction failed [{errorMessage}].");
-            return UriUtil.AddQueryString(cancelUrl, "message", HttpUtility.UrlEncode(errorMessage));
-        }
-
         private PayooOrder CreatePayooOrder(IOrderGroup orderGroup, IPayment payment)
         {
             var orderNumberID = _orderNumberGenerator.GenerateOrderNumber(orderGroup);
@@ -176,11 +115,11 @@ namespace Foundation.Commerce.Payment.Payoo
             order.OrderNo = orderNumberID;
             order.ShippingDays = 1;
             order.ShopBackUrl = $"{HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Authority)}{_cmsPaymentPropertyService.GetPayooPaymentProcessingPage()}";
-            order.ShopDomain = HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Authority);
+            order.ShopDomain = "https://vsm.local"; //HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Authority);
             order.ShopID = long.Parse(_paymentMethodConfiguration.ShopID);
             order.ShopTitle = _paymentMethodConfiguration.ShopTitle;
             order.StartShippingDate = DateTime.Now.ToString("dd/MM/yyyy");
-            order.NotifyUrl = string.Empty;
+            order.NotifyUrl = $"{HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Authority)}{_cmsPaymentPropertyService.GetPayooPaymentProcessingPage()}IpnListener";
             order.ValidityTime = DateTime.Now.AddDays(1).ToString("yyyyMMddHHmmss");
 
             var customer = CustomerContext.Current.GetContactById(orderGroup.CustomerId);
@@ -238,15 +177,6 @@ namespace Foundation.Commerce.Payment.Payoo
             payment.Properties[Constant.PayooExpiryDatePropertyName] = response.order.expiry_date;
             payment.Properties[Constant.PayooPaymentCodePropertyName] = response.order.payment_code;
             _orderRepository.Save(orderGroup);
-        }
-
-        private string CreateRedirectionUrl(IPurchaseOrder purchaseOrder, string acceptUrl)
-        {
-            var redirectionUrl = UriUtil.AddQueryString(acceptUrl, "success", "true");
-            redirectionUrl = UriUtil.AddQueryString(redirectionUrl, "contactId", purchaseOrder.CustomerId.ToString());
-            redirectionUrl = UriUtil.AddQueryString(redirectionUrl, "orderNumber", purchaseOrder.OrderLink.OrderGroupId.ToString());
-
-            return redirectionUrl;
         }
     }
 }
